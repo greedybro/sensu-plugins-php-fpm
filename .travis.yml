@@ -1,35 +1,24 @@
 language: ruby
+services:
+- docker
 cache:
 - bundler
 install:
 - bundle install
 rvm:
-- 2.0
-- 2.1
-- 2.2
 - 2.3.0
 - 2.4.1
-notifications:
-  email:
-    recipients:
-    - sensu-plugin@sensu-plugins.io
-    on_success: change
-    on_failure: always
 script:
 - bundle exec rake default
 - gem build sensu-plugins-php-fpm.gemspec
 - gem install sensu-plugins-php-fpm-*.gem
+- bash -c "[ ! -d bonsai/ ] && git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo 'bonsai/ exists, skipping git clone'"
 deploy:
-  provider: rubygems
-  api_key:
-    secure: K6x8cl/UqBU2XkuH71Y+NB3hDFVrUyQ+L+9Bu4AHjTxBOHo/r4IxEj6uccmbdvIytTop6e3J59BMTThGUSKS22grdouXH/0OTZDhWwV2SIs/BKgXpTH/xZJIlB2z0PCFCvEwcW7D/07asIScUYLmuZEHiyZ5t7xpc3h704C7on4=
-  gem: sensu-plugins-php-fpm
+- provider: script
+  script: bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh sensu-plugins-php-fpm
+  skip_cleanup: true
   on:
     tags: true
     all_branches: true
-    rvm: 2.0
-    rvm: 2.1
-    rvm: 2.2
-    rvm: 2.3.0
     rvm: 2.4.1
-    repo: sensu-plugins/sensu-plugins-php-fpm
+
